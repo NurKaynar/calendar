@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Haftam – Planlayıcı</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f6f3ee;--card:#fffdf9;--ink:#2a2622;--mute:#9a9189;--line:#ece6dc;--acc:#e8643c;--accsoft:#fde9e1;--today:#fff4ee;--shadow:0 1px 2px rgba(60,40,20,.05),0 8px 24px -12px rgba(60,40,20,.15);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+:root[data-theme=okyanus]{--bg:#eef4fa;--card:#fff;--ink:#1b2a3a;--mute:#7b8da0;--line:#dde7f1;--acc:#2f7de1;--accsoft:#e1eefc;--today:#eef6ff}
+:root[data-theme=orman]{--bg:#f0f5ef;--card:#fcfffb;--ink:#1f2d22;--mute:#80917f;--line:#dfeadc;--acc:#2f9461;--accsoft:#dff3e6;--today:#f0faf3}
+:root[data-theme=lavanta]{--bg:#f4f0fa;--card:#fffdff;--ink:#2a2236;--mute:#9189a3;--line:#e6def2;--acc:#8b5cf6;--accsoft:#ece4fd;--today:#f5f0ff}
+:root[data-theme=gece]{--bg:#151311;--card:#1e1b18;--ink:#f1ece6;--mute:#8e857c;--line:#2d2925;--acc:#ff8a63;--accsoft:#3a2419;--today:#271c16;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 500px at 10% -10%,var(--accsoft),transparent 60%),var(--bg);color:var(--ink);font:15px/1.4 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;gap:8px;padding:20px 28px 10px;flex-wrap:wrap}
+h1{font:600 30px Fraunces,Georgia,serif;letter-spacing:-.02em;margin:0 auto 0 0}
+h1 small{display:block;font:500 13px Inter,system-ui,sans-serif;color:var(--mute);margin-top:2px;letter-spacing:0}
+button,select,input,.btn{font:inherit;color:var(--ink)}
+button,select,.btn{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:var(--shadow);font-weight:500}
+button:hover,.btn:hover{border-color:var(--acc)}
+.seg{display:flex}.seg button{border-radius:0;box-shadow:none}.seg button:first-child{border-radius:999px 0 0 999px}.seg button:last-child{border-radius:0 999px 999px 0;border-left:0}
+.seg .on,#today{background:var(--acc);border-color:var(--acc);color:#fff}
+#prev,#next{width:38px;padding:7px 0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0 28px 12px}
+.bar input[type=text]{border:1px solid var(--line);border-radius:999px;padding:7px 14px;background:var(--card);width:140px;outline:none}
+#cals{display:flex;gap:6px;flex-wrap:wrap}
+.cal{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 6px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:13px}
+.cal span{cursor:pointer}.cal.off{opacity:.45}.cal input{width:18px;height:18px;border:0;padding:0;background:none;cursor:pointer}.cal i{color:var(--mute);font-style:normal;cursor:pointer}
+#board{display:grid;gap:14px;padding:0 28px 24px}
+#board.week{grid-template-columns:repeat(2,1fr)}
+#board.month{grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(86px,1fr);gap:6px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 16px 12px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:200px}
+.day.today{background:var(--today);box-shadow:0 0 0 1px var(--acc),var(--shadow)}
+.day.over,.mc.over{outline:2px dashed var(--acc);outline-offset:-4px;background:var(--accsoft)}
+.day h2{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 10px;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.day h2 span:last-child{font:500 28px Fraunces,Georgia,serif;letter-spacing:0;color:var(--ink)}
+.day.today h2 span:last-child{color:var(--acc)}
+.task{display:flex;gap:8px;align-items:flex-start;padding:7px 6px 7px 8px;margin-bottom:4px;border-radius:10px;border-left:3px solid var(--c);background:color-mix(in srgb,var(--c) 11%,transparent);cursor:grab}
+.task input{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin:2px 0 0;flex:none;border:1.5px solid var(--mute);border-radius:6px;display:grid;place-items:center;cursor:pointer;background:transparent}
+.task input:checked{background:var(--c);border-color:var(--c)}
+.task input:checked::after{content:"";width:9px;height:5px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.task .tt{flex:1;cursor:pointer;word-break:break-word;min-width:0}
+.task.done .tt span{text-decoration:line-through;color:var(--mute)}
+.meta{display:block;font-size:11px;color:var(--mute)}
+.add input{width:100%;border:0;border-radius:10px;padding:9px 10px;background:transparent;outline:none}
+.add input::placeholder{color:var(--mute)}.add input:focus{background:var(--accsoft)}
+.add{margin-top:auto;padding-top:6px}
+.mh{font-size:12px;font-weight:600;text-transform:uppercase;color:var(--mute);padding:0 4px}
+.mc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;overflow:hidden;cursor:pointer;min-height:86px}
+.mc.out{opacity:.45}.mc.today{border-color:var(--acc);background:var(--today)}
+.mc .n{font:500 16px Fraunces,Georgia,serif;cursor:pointer;display:inline-block;margin-bottom:3px}.mc.today .n{color:var(--acc)}
+.chip{font-size:12px;padding:2px 6px;border-radius:6px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:color-mix(in srgb,var(--c) 18%,transparent);border-left:3px solid var(--c)}
+.chip.done{text-decoration:line-through;opacity:.6}.more{font-size:11px;color:var(--mute)}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+#ov.show{display:flex}
+#modal{background:var(--card);border-radius:20px;max-width:540px;width:100%;max-height:92vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.row{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+.row label{display:flex;flex-direction:column;font-size:12px;color:var(--mute);gap:3px;flex:1;min-width:120px}
+#modal input[type=text],#modal input[type=date],#modal input[type=time],#modal select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg);width:100%;box-shadow:none}
+#f_t{font:600 18px Fraunces,Georgia,serif!important}
+.sw{width:24px;height:24px;padding:0;border-radius:50%;box-shadow:none;border:0}.sw.on{outline:2px solid var(--ink);outline-offset:2px}
+#sw input{width:28px;height:28px;border:0;padding:0;background:none}
+.sub{display:flex;gap:8px;align-items:center;padding:3px 0}.sub span{flex:1}.sub.d span{text-decoration:line-through;color:var(--mute)}
+.sub i,.fi i{font-style:normal;cursor:pointer;color:var(--mute)}
+.files{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.fi{border:1px solid var(--line);border-radius:10px;padding:4px 8px;font-size:12px;display:flex;gap:6px;align-items:center}.fi img{max-width:110px;max-height:80px;border-radius:6px}
+.sp{flex:1}#gl{color:var(--acc);font-size:13px}
+#toast{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:30}
+.tz{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);cursor:pointer;max-width:300px}
+@media(min-width:901px){
+body{height:100vh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#board{flex:1;min-height:0;padding-bottom:18px}
+#board.week{grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:16px}
+#board.month{grid-template-rows:auto}
+.day{min-height:0;overflow:hidden;padding:18px 18px 12px}
+.day .lst{flex:1;min-height:0;overflow-y:auto}
+.day h2 span:last-child{font-size:32px}
+.task{font-size:15px}
+.notes{grid-column:span 3}
+.mc{min-height:0}
+}
+@media(max-width:520px){header,.bar{padding-left:14px;padding-right:14px}#board{padding:0 14px 24px}#board.week{grid-template-columns:1fr}h1{font-size:24px}.chip{font-size:10px;padding:1px 3px}.mc{padding:3px;min-height:64px}}
+</style>
+</head>
+<body>
+<header>
+  <h1><span id="title"></span><small id="range"></small></h1>
+  <div class="seg"><button id="vw">Hafta</button><button id="vm">Ay</button></div>
+  <button id="prev" aria-label="Önceki">←</button><button id="today">Bugün</button><button id="next" aria-label="Sonraki">→</button>
+  <select id="theme" aria-label="Tema"><option value="krem">🎨 Krem</option><option value="okyanus">🌊 Okyanus</option><option value="orman">🌿 Orman</option><option value="lavanta">💜 Lavanta</option><option value="gece">🌙 Gece</option></select>
+</header>
+<div class="bar">
+  <div id="cals"></div>
+  <input type="text" id="newcal" placeholder="Yeni takvim" maxlength="30"><button id="addcal">+ Takvim</button>
+  <button id="imp">.ics içe aktar</button><button id="exp">.ics kopyala</button><button id="bell">🔔 Bildirim</button>
+  <input type="file" id="icsf" accept=".ics,text/calendar" hidden>
+</div>
+<main id="board"></main>
+<div id="ov"><div id="modal"></div></div>
+<div id="toast"></div>
+<script>
+const GUN=["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
+const pal=["#e8643c","#e0a526","#3fa66b","#2fa5b8","#4a78e8","#8b5cf6","#d9488f","#6b7280"];
+const $=id=>document.getElementById(id),uid=()=>Math.random().toString(36).slice(2,9),pad=n=>String(n).padStart(2,"0");
+const key=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse=k=>new Date(k+"T00:00"),addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+let S=null,drag=null,cur=new Date();cur.setHours(0,0,0,0);
+try{S=JSON.parse(localStorage.getItem("haftam2"))}catch(e){}
+if(!S){S={tasks:[],cals:[{id:"c1",name:"Kişisel",color:pal[0],on:true}],theme:matchMedia("(prefers-color-scheme:dark)").matches?"gece":"krem",view:"week",fired:{}};
+ try{const o=JSON.parse(localStorage.getItem("haftam")||"{}");for(const k in o)(o[k]||[]).forEach(t=>S.tasks.push({id:uid(),t:t.t,date:k,cal:"c1",done:t.d?{[k]:1}:{},subs:[],files:[]}))}catch(e){}}
+function save(){try{localStorage.setItem("haftam2",JSON.stringify(S))}catch(e){toast("Depolama dolu; büyük dosyaları silin.")}}
+function toast(m){const t=document.createElement("div");t.className="tz";t.textContent=m;t.onclick=()=>t.remove();$("toast").appendChild(t);setTimeout(()=>t.remove(),8000)}
+const calOf=t=>S.cals.find(c=>c.id===t.cal)||S.cals[0],col=t=>t.color||calOf(t).color;
+function occurs(t,k){if(t.date==="notlar")return k==="notlar";if(k==="notlar")return false;if(t.date===k)return true;if(!t.rep||k<t.date)return false;const a=parse(t.date),b=parse(k),w=b.getDay();
+ return t.rep==="daily"||(t.rep==="weekdays"&&w>0&&w<6)||(t.rep==="weekly"&&a.getDay()===w)||(t.rep==="monthly"&&a.getDate()===b.getDate())}
+const list=k=>S.tasks.filter(t=>calOf(t).on&&occurs(t,k)).sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
+const newTask=(t,k)=>({id:uid(),t,date:k,cal:(S.cals.find(c=>c.on)||S.cals[0]).id,done:{},subs:[],files:[]});
+function dropify(el,k){el.ondragover=e=>{e.preventDefault();el.classList.add("over")};el.ondragleave=()=>el.classList.remove("over");
+ el.ondrop=e=>{e.preventDefault();const t=S.tasks.find(x=>x.id===drag);drag=null;if(t){t.date=k;save();render()}}}
+function taskRow(t,k){const r=document.createElement("div");r.className="task"+(t.done[k]?" done":"");r.draggable=true;r.style.setProperty("--c",col(t));
+ const sd=t.subs.filter(s=>s.d).length,meta=[t.time?"⏰ "+t.time:"",t.rep?"🔁":"",t.subs.length?"☑ "+sd+"/"+t.subs.length:"",t.files.length?"📎 "+t.files.length:""].filter(Boolean).join("  ");
+ r.innerHTML='<input type="checkbox"><div class="tt"><span></span><small class="meta"></small></div>';
+ r.querySelector("span").textContent=t.t;r.querySelector(".meta").textContent=meta;
+ const c=r.querySelector("input");c.checked=!!t.done[k];c.onchange=()=>{if(c.checked)t.done[k]=1;else delete t.done[k];save();render()};
+ r.querySelector(".tt").onclick=()=>openTask(t.id);r.ondragstart=()=>{drag=t.id};return r}
+function cell(k,label,num,today,cls){const el=document.createElement("section");el.className="day"+(today?" today":"")+(cls?" "+cls:"");
+ el.innerHTML='<h2><span></span><span></span></h2><div class="lst"></div><div class="add"><input placeholder="+ Görev ekle" maxlength="200"></div>';
+ const hs=el.querySelectorAll("h2 span");hs[0].textContent=label;hs[1].textContent=num;
+ list(k).forEach(t=>el.querySelector(".lst").appendChild(taskRow(t,k)));
+ el.querySelector("input").onkeydown=e=>{if(e.key==="Enter"&&e.target.value.trim()){S.tasks.push(newTask(e.target.value.trim(),k));save();render()}};
+ dropify(el,k);return el}
+function monthView(b,tk){const first=new Date(cur.getFullYear(),cur.getMonth(),1),start=addDays(first,-((first.getDay()+6)%7));
+ GUN.forEach(g=>{const h=document.createElement("div");h.className="mh";h.textContent=g.slice(0,3);b.appendChild(h)});
+ for(let i=0;i<42;i++){const d=addDays(start,i),k=key(d);if(i>=35&&d.getMonth()!==cur.getMonth())break;
+  const c=document.createElement("div");c.className="mc"+(d.getMonth()!==cur.getMonth()?" out":"")+(k===tk?" today":"");
+  c.innerHTML='<b class="n">'+d.getDate()+'</b>';const ts=list(k);
+  ts.slice(0,3).forEach(t=>{const e=document.createElement("div");e.className="chip"+(t.done[k]?" done":"");e.style.setProperty("--c",col(t));e.textContent=(t.time?t.time+" ":"")+t.t;e.onclick=ev=>{ev.stopPropagation();openTask(t.id)};c.appendChild(e)});
+  if(ts.length>3){const m=document.createElement("div");m.className="more";m.textContent="+"+(ts.length-3)+" daha";c.appendChild(m)}
+  c.querySelector(".n").onclick=ev=>{ev.stopPropagation();cur=d;S.view="week";save();render()};
+  c.onclick=()=>{const t=newTask("",k);S.tasks.push(t);openTask(t.id)};
+  dropify(c,k);b.appendChild(c)}}
+function render(){document.documentElement.dataset.theme=S.theme;const b=$("board"),tk=key(new Date());b.innerHTML="";b.className=S.view;
+ const ay=(d,y)=>d.toLocaleDateString("tr-TR",y?{month:"long",year:"numeric"}:{month:"long"});
+ if(S.view==="week"){const m=addDays(cur,-((cur.getDay()+6)%7)),e=addDays(m,6);
+  $("title").textContent=m.getMonth()===e.getMonth()?ay(m,1):m.getFullYear()===e.getFullYear()?ay(m)+" – "+ay(e,1):ay(m,1)+" – "+ay(e,1);
+  $("range").textContent=m.toLocaleDateString("tr-TR",{day:"numeric",month:"long"})+" – "+e.toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"});
+  for(let i=0;i<7;i++){const d=addDays(m,i),k=key(d);b.appendChild(cell(k,GUN[i],d.getDate(),k===tk))}
+  b.appendChild(cell("notlar","Bir gün / Notlar","∞",false,"notes"))}
+ else{$("title").textContent=ay(cur,1);$("range").textContent="Aylık görünüm";monthView(b,tk)}
+ bar()}
+function bar(){$("vw").className=S.view==="week"?"on":"";$("vm").className=S.view==="month"?"on":"";$("theme").value=S.theme;
+ const c=$("cals");c.innerHTML="";S.cals.forEach(x=>{const e=document.createElement("div");e.className="cal"+(x.on?"":" off");
+  e.innerHTML='<input type="color"><span></span>'+(S.cals.length>1?'<i title="Sil">×</i>':"");
+  const ci=e.querySelector("input");ci.value=x.color;ci.onchange=()=>{x.color=ci.value;save();render()};
+  e.querySelector("span").textContent=x.name;e.querySelector("span").onclick=()=>{x.on=!x.on;save();render()};
+  const d=e.querySelector("i");if(d)d.onclick=()=>{S.cals=S.cals.filter(y=>y!==x);S.tasks.forEach(t=>{if(t.cal===x.id)t.cal=S.cals[0].id});save();render()};
+  c.appendChild(e)})}
+function gcal(t){const d=t.date==="notlar"?key(new Date()):t.date,c=d.replace(/-/g,"");let dt;
+ if(t.time){const e=parse(d),[h,mi]=t.time.split(":");e.setHours(+h+1,+mi);dt=c+"T"+t.time.replace(":","")+"00/"+key(e).replace(/-/g,"")+"T"+pad(e.getHours())+pad(e.getMinutes())+"00"}
+ else dt=c+"/"+key(addDays(parse(d),1)).replace(/-/g,"");
+ const R={daily:"FREQ=DAILY",weekdays:"FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",weekly:"FREQ=WEEKLY",monthly:"FREQ=MONTHLY"};
+ return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(t.t)+"&dates="+dt+"&details="+encodeURIComponent(t.subs.map(s=>"- "+s.t).join("\n"))+(t.rep?"&recur="+encodeURIComponent("RRULE:"+R[t.rep]):"")}
+function openTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;$("ov").classList.add("show");const m=$("modal");
+ m.innerHTML='<div class="row"><input type="text" id="f_t" placeholder="Görev adı"></div>'
+ +'<div class="row"><label>Tarih<input type="date" id="f_d"></label><label>Saat<input type="time" id="f_h"></label></div>'
+ +'<div class="row"><label>Hatırlatıcı<select id="f_r"><option value="">Yok</option><option value="0">Vaktinde</option><option value="10">10 dk önce</option><option value="60">1 saat önce</option><option value="1440">1 gün önce</option></select></label>'
+ +'<label>Tekrar<select id="f_p"><option value="">Tekrarlama</option><option value="daily">Her gün</option><option value="weekdays">Hafta içi</option><option value="weekly">Her hafta</option><option value="monthly">Her ay</option></select></label></div>'
+ +'<div class="row"><label>Takvim<select id="f_c"></select></label></div><div class="row" id="sw"></div><div id="subs"></div>'
+ +'<div class="row"><input type="text" id="f_s" placeholder="+ Alt görev ekle"></div>'
+ +'<div class="row"><label class="btn" style="flex:none;flex-direction:row;color:var(--ink)">📎 Resim / dosya ekle<input type="file" id="f_f" multiple hidden></label></div><div class="files" id="fl"></div>'
+ +'<div class="row"><a id="gl" target="_blank" rel="noopener">Google Takvim’e ekle ↗</a><span class="sp"></span><button id="del">Sil</button><button id="ok">Kapat</button></div>';
+ $("f_t").value=t.t;$("f_d").value=t.date==="notlar"?"":t.date;$("f_h").value=t.time||"";$("f_r").value=t.rem==null?"":String(t.rem);$("f_p").value=t.rep||"";
+ S.cals.forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.name;$("f_c").appendChild(o)});$("f_c").value=calOf(t).id;
+ $("f_t").oninput=e=>{t.t=e.target.value;save()};$("f_d").onchange=e=>{t.date=e.target.value||"notlar";save()};$("f_h").onchange=e=>{t.time=e.target.value||"";save()};
+ $("f_r").onchange=e=>{t.rem=e.target.value===""?null:+e.target.value;save()};$("f_p").onchange=e=>{t.rep=e.target.value;save()};$("f_c").onchange=e=>{t.cal=e.target.value;save()};
+ const sw=$("sw");pal.forEach(c=>{const b=document.createElement("button");b.className="sw"+(t.color===c?" on":"");b.style.background=c;b.onclick=()=>{t.color=c;save();openTask(id)};sw.appendChild(b)});
+ const ci=document.createElement("input");ci.type="color";ci.value=col(t);ci.onchange=()=>{t.color=ci.value;save();openTask(id)};sw.appendChild(ci);
+ const rs=document.createElement("button");rs.textContent="↺";rs.title="Takvim rengine dön";rs.onclick=()=>{delete t.color;save();openTask(id)};sw.appendChild(rs);
+ t.subs.forEach((s,i)=>{const r=document.createElement("div");r.className="sub"+(s.d?" d":"");r.innerHTML='<input type="checkbox"><span></span><i>×</i>';
+  r.querySelector("span").textContent=s.t;const c=r.querySelector("input");c.checked=!!s.d;c.onchange=()=>{s.d=c.checked;save();openTask(id)};
+  r.querySelector("i").onclick=()=>{t.subs.splice(i,1);save();openTask(id)};$("subs").appendChild(r)});
+ $("f_s").onkeydown=e=>{if(e.key==="Enter"&&e.target.value.trim()){t.subs.push({t:e.target.value.trim(),d:false});save();openTask(id);$("f_s").focus()}};
+ t.files.forEach((f,i)=>{const r=document.createElement("div");r.className="fi";
+  if((f.y||"").startsWith("image/")){const im=document.createElement("img");im.src=f.d;im.alt=f.n;r.appendChild(im)}
+  else{const a=document.createElement("a");a.href=f.d;a.download=f.n;a.textContent="📄 "+f.n;r.appendChild(a)}
+  const x=document.createElement("i");x.textContent="×";x.onclick=()=>{t.files.splice(i,1);save();openTask(id)};r.appendChild(x);$("fl").appendChild(r)});
+ $("f_f").onchange=async e=>{for(const f of e.target.files){if(f.size>1.5e6){toast(f.name+" 1,5 MB’tan büyük");continue}
+  const d=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f)});t.files.push({n:f.name,y:f.type,d})}save();openTask(id)};
+ $("gl").href=gcal(t);$("gl").onclick=()=>{$("gl").href=gcal(t)};
+ $("del").onclick=()=>{S.tasks=S.tasks.filter(x=>x!==t);closeM()};$("ok").onclick=closeM;if(!t.t)$("f_t").focus()}
+function closeM(){$("ov").classList.remove("show");S.tasks=S.tasks.filter(t=>t.t);save();render()}
+$("ov").onclick=e=>{if(e.target===$("ov"))closeM()};
+function step(n){cur=S.view==="week"?addDays(cur,7*n):new Date(cur.getFullYear(),cur.getMonth()+n,1);render()}
+$("prev").onclick=()=>step(-1);$("next").onclick=()=>step(1);
+$("today").onclick=()=>{cur=new Date();cur.setHours(0,0,0,0);render()};
+$("vw").onclick=()=>{S.view="week";save();render()};$("vm").onclick=()=>{S.view="month";save();render()};
+$("theme").onchange=e=>{S.theme=e.target.value;save();render()};
+$("addcal").onclick=()=>{const n=$("newcal").value.trim();if(!n)return;S.cals.push({id:uid(),name:n,color:pal[S.cals.length%pal.length],on:true});$("newcal").value="";save();render()};
+$("newcal").onkeydown=e=>{if(e.key==="Enter")$("addcal").click()};
+$("imp").onclick=()=>$("icsf").click();
+$("icsf").onchange=async e=>{const f=e.target.files[0];if(!f)return;const tx=(await f.text()).replace(/\r?\n[ \t]/g,"");let n=0;
+ tx.split("BEGIN:VEVENT").slice(1).forEach(b=>{const s=(b.match(/SUMMARY[^:]*:(.*)/)||[])[1],d=b.match(/DTSTART[^:]*:(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2}))?/),r=(b.match(/RRULE:.*FREQ=(\w+)/)||[])[1];
+  if(!s||!d)return;const t=newTask(s.trim(),d[1]+"-"+d[2]+"-"+d[3]);if(d[4])t.time=d[4]+":"+d[5];t.rep={DAILY:"daily",WEEKLY:"weekly",MONTHLY:"monthly"}[r]||"";S.tasks.push(t);n++});
+ save();render();toast(n+" etkinlik içe aktarıldı");e.target.value=""};
+$("exp").onclick=()=>{const R={daily:"FREQ=DAILY",weekdays:"FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",weekly:"FREQ=WEEKLY",monthly:"FREQ=MONTHLY"},st=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z";
+ let o="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Haftam//TR\r\n";
+ S.tasks.filter(t=>t.date!=="notlar").forEach(t=>{const c=t.date.replace(/-/g,"");o+="BEGIN:VEVENT\r\nUID:"+t.id+"@haftam\r\nDTSTAMP:"+st+"\r\nSUMMARY:"+t.t+"\r\n"+(t.time?"DTSTART:"+c+"T"+t.time.replace(":","")+"00\r\n":"DTSTART;VALUE=DATE:"+c+"\r\n")+(t.rep?"RRULE:"+R[t.rep]+"\r\n":"")+"END:VEVENT\r\n"});
+ o+="END:VCALENDAR";try{navigator.clipboard.writeText(o).then(()=>toast("ICS panoya kopyalandı"),()=>toast("Kopyalanamadı"))}catch(e){toast("Kopyalanamadı")}};
+$("bell").onclick=()=>{try{Notification.requestPermission().then(p=>toast(p==="granted"?"Bildirimler açık":"İzin verilmedi; sayfa içi uyarılar çalışır"))}catch(e){toast("Tarayıcı bildirimi bu ortamda yok; sayfa içi uyarılar çalışır")}};
+function tick(){const now=Date.now(),b=new Date();b.setHours(0,0,0,0);
+ [0,1].forEach(n=>{const d=addDays(b,n),k=key(d);S.tasks.forEach(t=>{if(t.rem==null||!occurs(t,k)||t.done[k])return;
+  const [h,mi]=(t.time||"09:00").split(":"),f=new Date(d);f.setHours(+h,+mi,0,0);const at=f.getTime()-t.rem*6e4,id=t.id+k;
+  if(now>=at&&now<f.getTime()+36e5&&!S.fired[id]){S.fired[id]=1;save();const m="⏰ "+t.t+(t.time?" – "+t.time:"");toast(m);try{if(Notification.permission==="granted")new Notification(m)}catch(e){}}})})}
+render();tick();setInterval(tick,15000);
+</script>
+</body>
+</html>
