@@ -53,8 +53,13 @@ button:hover,.btn:hover{border-color:var(--acc)}
 .mc .n{font:500 16px Fraunces,Georgia,serif;cursor:pointer;display:inline-block;margin-bottom:3px}.mc.today .n{color:var(--acc)}
 .chip{font-size:12px;padding:2px 6px;border-radius:6px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:color-mix(in srgb,var(--c) 18%,transparent);border-left:3px solid var(--c)}
 .chip.done{text-decoration:line-through;opacity:.6}.more{font-size:11px;color:var(--mute)}
-#ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
-#ov.show{display:flex}
+#ov,#auth{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+#ov.show,#auth.show{display:flex}
+#auth{z-index:40;background:var(--bg)}
+.acard{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:380px;width:100%;padding:24px;box-shadow:var(--shadow)}
+.acard h2{font:600 26px Fraunces,Georgia,serif;margin:0 0 4px}.acard p{color:var(--mute);margin:0 0 16px;font-size:14px}
+.acard input{width:100%;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);outline:none}
+.acard .r{display:flex;gap:8px}.acard .r button{flex:1}#aerr{color:var(--acc);font-size:13px;min-height:18px;margin-top:8px}
 #modal{background:var(--card);border-radius:20px;max-width:540px;width:100%;max-height:92vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .row{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
 .row label{display:flex;flex-direction:column;font-size:12px;color:var(--mute);gap:3px;flex:1;min-width:120px}
@@ -89,6 +94,7 @@ body{height:100vh;min-height:0;display:flex;flex-direction:column;overflow:hidde
   <div class="seg"><button id="vw">Hafta</button><button id="vm">Ay</button></div>
   <button id="prev" aria-label="Önceki">←</button><button id="today">Bugün</button><button id="next" aria-label="Sonraki">→</button>
   <select id="theme" aria-label="Tema"><option value="krem">🎨 Krem</option><option value="okyanus">🌊 Okyanus</option><option value="orman">🌿 Orman</option><option value="lavanta">💜 Lavanta</option><option value="gece">🌙 Gece</option></select>
+  <button id="out">Çıkış</button>
 </header>
 <div class="bar">
   <div id="cals"></div>
@@ -98,7 +104,9 @@ body{height:100vh;min-height:0;display:flex;flex-direction:column;overflow:hidde
 </div>
 <main id="board"></main>
 <div id="ov"><div id="modal"></div></div>
+<div id="auth"><div class="acard"><h2>Haftam</h2><p>Görevlerinize her cihazdan ulaşmak için giriş yapın.</p><input type="email" id="a_e" placeholder="E-posta" autocomplete="email"><input type="password" id="a_p" placeholder="Şifre (en az 6 karakter)" autocomplete="current-password"><div class="r"><button id="a_in" style="background:var(--acc);border-color:var(--acc);color:#fff">Giriş yap</button><button id="a_up">Hesap oluştur</button></div><div id="aerr"></div></div></div>
 <div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 const GUN=["Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi","Pazar"];
 const pal=["#e8643c","#e0a526","#3fa66b","#2fa5b8","#4a78e8","#8b5cf6","#d9488f","#6b7280"];
@@ -109,7 +117,10 @@ let S=null,drag=null,cur=new Date();cur.setHours(0,0,0,0);
 try{S=JSON.parse(localStorage.getItem("haftam2"))}catch(e){}
 if(!S){S={tasks:[],cals:[{id:"c1",name:"Kişisel",color:pal[0],on:true}],theme:matchMedia("(prefers-color-scheme:dark)").matches?"gece":"krem",view:"week",fired:{}};
  try{const o=JSON.parse(localStorage.getItem("haftam")||"{}");for(const k in o)(o[k]||[]).forEach(t=>S.tasks.push({id:uid(),t:t.t,date:k,cal:"c1",done:t.d?{[k]:1}:{},subs:[],files:[]}))}catch(e){}}
-function save(){try{localStorage.setItem("haftam2",JSON.stringify(S))}catch(e){toast("Depolama dolu; büyük dosyaları silin.")}}
+const SB=window.supabase.createClient("https://sirnvnxedttgefrtgvew.supabase.co","sb_publishable_zU9m4h4SOq0Bdw-qxEwc9A_E9SDSsSm");
+let uidU=null,ready=false,timer=null;
+function cloudSave(){if(!uidU||!ready)return;clearTimeout(timer);timer=setTimeout(async()=>{const r=await SB.from("planner").upsert({user_id:uidU,data:S,updated_at:new Date().toISOString()});if(r.error)toast("Buluta kaydedilemedi: "+r.error.message)},800)}
+function save(){try{localStorage.setItem("haftam2",JSON.stringify(S))}catch(e){toast("Depolama dolu; büyük dosyaları silin.")}cloudSave()}
 function toast(m){const t=document.createElement("div");t.className="tz";t.textContent=m;t.onclick=()=>t.remove();$("toast").appendChild(t);setTimeout(()=>t.remove(),8000)}
 const calOf=t=>S.cals.find(c=>c.id===t.cal)||S.cals[0],col=t=>t.color||calOf(t).color;
 function occurs(t,k){if(t.date==="notlar")return k==="notlar";if(k==="notlar")return false;if(t.date===k)return true;if(!t.rep||k<t.date)return false;const a=parse(t.date),b=parse(k),w=b.getDay();
@@ -185,7 +196,7 @@ function openTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;$("ov").cl
   if((f.y||"").startsWith("image/")){const im=document.createElement("img");im.src=f.d;im.alt=f.n;r.appendChild(im)}
   else{const a=document.createElement("a");a.href=f.d;a.download=f.n;a.textContent="📄 "+f.n;r.appendChild(a)}
   const x=document.createElement("i");x.textContent="×";x.onclick=()=>{t.files.splice(i,1);save();openTask(id)};r.appendChild(x);$("fl").appendChild(r)});
- $("f_f").onchange=async e=>{for(const f of e.target.files){if(f.size>1.5e6){toast(f.name+" 1,5 MB’tan büyük");continue}
+ $("f_f").onchange=async e=>{for(const f of e.target.files){if(f.size>7e5){toast(f.name+" 700 KB’tan büyük");continue}
   const d=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f)});t.files.push({n:f.name,y:f.type,d})}save();openTask(id)};
  $("gl").href=gcal(t);$("gl").onclick=()=>{$("gl").href=gcal(t)};
  $("del").onclick=()=>{S.tasks=S.tasks.filter(x=>x!==t);closeM()};$("ok").onclick=closeM;if(!t.t)$("f_t").focus()}
@@ -212,7 +223,22 @@ function tick(){const now=Date.now(),b=new Date();b.setHours(0,0,0,0);
  [0,1].forEach(n=>{const d=addDays(b,n),k=key(d);S.tasks.forEach(t=>{if(t.rem==null||!occurs(t,k)||t.done[k])return;
   const [h,mi]=(t.time||"09:00").split(":"),f=new Date(d);f.setHours(+h,+mi,0,0);const at=f.getTime()-t.rem*6e4,id=t.id+k;
   if(now>=at&&now<f.getTime()+36e5&&!S.fired[id]){S.fired[id]=1;save();const m="⏰ "+t.t+(t.time?" – "+t.time:"");toast(m);try{if(Notification.permission==="granted")new Notification(m)}catch(e){}}})})}
-render();tick();setInterval(tick,15000);
+let started=false;
+async function boot(){const r=await SB.auth.getSession(),se=r.data.session;
+ if(!se){$("auth").classList.add("show");return}
+ uidU=se.user.id;$("auth").classList.remove("show");
+ const q=await SB.from("planner").select("data").eq("user_id",uidU).maybeSingle();
+ if(q.error)toast("Veri yüklenemedi: "+q.error.message);
+ else{if(q.data&&q.data.data&&q.data.data.tasks)S=Object.assign(S,q.data.data);if(!S.fired)S.fired={};ready=true;save()}
+ render();if(!started){started=true;tick();setInterval(tick,15000)}}
+async function auth(up){const e=$("a_e").value.trim(),p=$("a_p").value;$("aerr").textContent="";if(!e||p.length<6){$("aerr").textContent="E-posta ve en az 6 karakterli şifre girin.";return}
+ const r=up?await SB.auth.signUp({email:e,password:p,options:{emailRedirectTo:location.href.split("#")[0]}}):await SB.auth.signInWithPassword({email:e,password:p});
+ if(r.error){$("aerr").textContent=r.error.message;return}
+ if(up&&!r.data.session){$("aerr").textContent="E-postanıza onay bağlantısı gönderildi. Onayladıktan sonra giriş yapın.";return}
+ boot()}
+$("a_in").onclick=()=>auth(false);$("a_up").onclick=()=>auth(true);$("a_p").onkeydown=e=>{if(e.key==="Enter")auth(false)};
+$("out").onclick=async()=>{await SB.auth.signOut();try{localStorage.removeItem("haftam2")}catch(e){}location.reload()};
+boot();
 </script>
 </body>
 </html>
