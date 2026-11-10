@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head> /
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Haftam – Planlayıcı</title>
@@ -139,7 +139,7 @@ function cell(k,label,num,today,cls){const el=document.createElement("section");
  el.innerHTML='<h2><span></span><span></span></h2><div class="lst"></div><div class="add"><input placeholder="+ Görev ekle" maxlength="200"></div>';
  const hs=el.querySelectorAll("h2 span");hs[0].textContent=label;hs[1].textContent=num;
  list(k).forEach(t=>el.querySelector(".lst").appendChild(taskRow(t,k)));
- el.querySelector("input").onkeydown=e=>{if(e.key==="Enter"&&e.target.value.trim()){S.tasks.push(newTask(e.target.value.trim(),k));save();render()}};
+ el.dataset.k=k;el.querySelector(".add input").onkeydown=e=>{if(e.key==="Enter"&&e.target.value.trim()){S.tasks.push(newTask(e.target.value.trim(),k));save();render();const n=document.querySelector('.day[data-k="'+k+'"] .add input');if(n)n.focus()}};
  dropify(el,k);return el}
 function monthView(b,tk){const first=new Date(cur.getFullYear(),cur.getMonth(),1),start=addDays(first,-((first.getDay()+6)%7));
  GUN.forEach(g=>{const h=document.createElement("div");h.className="mh";h.textContent=g.slice(0,3);b.appendChild(h)});
